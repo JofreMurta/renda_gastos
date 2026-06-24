@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle Financeiro Familiar</title>
+
+  <!-- Tipografia -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ===================== TELA DE LOGIN ===================== -->
+  <div id="tela-login" class="login-wrap" aria-hidden="false">
+    <div class="login-card">
+      <div class="brand">
+        <span class="brand-mark">₿</span>
+        <div>
+          <h1 class="brand-title">Controle Financeiro</h1>
+          <p class="brand-sub">Acesso familiar restrito</p>
+        </div>
+      </div>
+
+      <form id="form-login" class="login-form" autocomplete="on">
+        <label class="field">
+          <span>E-mail</span>
+          <input type="email" id="login-email" required placeholder="seu@email.com">
+        </label>
+        <label class="field">
+          <span>Senha</span>
+          <input type="password" id="login-senha" required placeholder="••••••••">
+        </label>
+        <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+        <p id="login-erro" class="msg-erro" role="alert"></p>
+      </form>
+    </div>
+    <p class="login-rodape">Sessão protegida por autenticação. Os dados são compartilhados entre os usuários cadastrados.</p>
+  </div>
+
+  <!-- ===================== APLICAÇÃO ===================== -->
+  <div id="app" class="app" aria-hidden="true" hidden>
+
+    <header class="topo">
+      <div class="topo-brand">
+        <span class="brand-mark sm">₿</span>
+        <span class="topo-title">Controle Financeiro Familiar</span>
+      </div>
+      <div class="topo-user">
+        <span id="user-email" class="user-email"></span>
+        <button id="btn-sair" class="btn btn-ghost">Sair</button>
+      </div>
+    </header>
+
+    <nav class="abas" role="tablist">
+      <button class="aba ativa" data-aba="dashboard" role="tab">Dashboard</button>
+      <button class="aba" data-aba="rendas" role="tab">Rendas</button>
+      <button class="aba" data-aba="despesas" role="tab">Despesas</button>
+      <button class="aba" data-aba="aplicacoes" role="tab">Aplicações</button>
+      <button class="aba" data-aba="config" role="tab">Tipos &amp; Categorias</button>
+    </nav>
+
+    <main class="conteudo">
+
+      <!-- ---------- DASHBOARD ---------- -->
+      <section id="painel-dashboard" class="painel ativo">
+        <div class="painel-cabecalho">
+          <h2>Dashboard</h2>
+          <div class="periodo-bar">
+            <div class="seg-control" id="modo-periodo">
+              <button class="seg ativo" data-modo="mes">Mês único</button>
+              <button class="seg" data-modo="intervalo">Intervalo</button>
+              <button class="seg" data-modo="ano">Ano</button>
+            </div>
+
+            <div class="periodo-campos">
+              <label class="campo-inline" data-campo="mes">
+                <span>Mês</span>
+                <input type="month" id="dash-mes">
+              </label>
+              <label class="campo-inline" data-campo="intervalo-de" hidden>
+                <span>De</span>
+                <input type="month" id="dash-de">
+              </label>
+              <label class="campo-inline" data-campo="intervalo-ate" hidden>
+                <span>Até</span>
+                <input type="month" id="dash-ate">
+              </label>
+              <label class="campo-inline" data-campo="ano" hidden>
+                <span>Ano</span>
+                <input type="number" id="dash-ano" min="2000" max="2100" step="1">
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="cards">
+          <div class="card card-renda">
+            <span class="card-rotulo">Renda</span>
+            <span class="card-valor" id="kpi-renda">R$ 0,00</span>
+          </div>
+          <div class="card card-despesa">
+            <span class="card-rotulo">Despesas</span>
+            <span class="card-valor" id="kpi-despesa">R$ 0,00</span>
+          </div>
+          <div class="card card-saldo">
+            <span class="card-rotulo">Saldo</span>
+            <span class="card-valor" id="kpi-saldo">R$ 0,00</span>
+          </div>
+          <div class="card card-aplic">
+            <span class="card-rotulo">Aplicações</span>
+            <span class="card-valor" id="kpi-aplic">R$ 0,00</span>
+          </div>
+        </div>
+
+        <div class="graficos">
+          <div class="grafico-box">
+            <h3>Despesas por categoria</h3>
+            <div class="canvas-wrap"><canvas id="chart-categorias"></canvas></div>
+            <p class="grafico-vazio" id="vazio-categorias" hidden>Sem despesas no período selecionado.</p>
+          </div>
+          <div class="grafico-box">
+            <h3>Composição financeira</h3>
+            <div class="canvas-wrap"><canvas id="chart-composicao"></canvas></div>
+            <p class="grafico-vazio" id="vazio-composicao" hidden>Sem lançamentos no período selecionado.</p>
+          </div>
+        </div>
+
+        <div class="tabela-resumo">
+          <h3>Despesas por categoria — detalhamento</h3>
+          <table>
+            <thead><tr><th>Categoria</th><th class="num">Valor</th><th class="num">% do total</th></tr></thead>
+            <tbody id="tbody-resumo-cat"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ---------- RENDAS ---------- -->
+      <section id="painel-rendas" class="painel">
+        <div class="painel-cabecalho"><h2>Rendas</h2></div>
+
+        <form id="form-renda" class="form-grid">
+          <label class="field">
+            <span>Competência (mês)</span>
+            <input type="month" id="renda-comp" required>
+          </label>
+          <label class="field">
+            <span>Tipo de renda</span>
+            <select id="renda-tipo" required></select>
+          </label>
+          <label class="field">
+            <span>Valor (R$)</span>
+            <input type="number" id="renda-valor" min="0" step="0.01" required placeholder="0,00">
+          </label>
+          <input type="hidden" id="renda-id">
+          <div class="form-acoes">
+            <button type="submit" class="btn btn-primary" id="renda-submit">Adicionar renda</button>
+            <button type="button" class="btn btn-ghost" id="renda-cancelar" hidden>Cancelar edição</button>
+          </div>
+        </form>
+
+        <div class="filtro-comp">
+          <label class="campo-inline">
+            <span>Filtrar por competência</span>
+            <input type="month" id="filtro-renda">
+          </label>
+          <button class="btn btn-ghost" id="filtro-renda-limpar">Mostrar todas</button>
+        </div>
+
+        <div class="tabela-lancamentos">
+          <table>
+            <thead><tr><th>Competência</th><th>Tipo</th><th class="num">Valor</th><th class="acoes-col">Ações</th></tr></thead>
+            <tbody id="tbody-rendas"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ---------- DESPESAS ---------- -->
+      <section id="painel-despesas" class="painel">
+        <div class="painel-cabecalho"><h2>Despesas</h2></div>
+
+        <form id="form-despesa" class="form-grid">
+          <label class="field">
+            <span>Competência (mês)</span>
+            <input type="month" id="despesa-comp" required>
+          </label>
+          <label class="field">
+            <span>Categoria</span>
+            <select id="despesa-categoria" required></select>
+          </label>
+          <label class="field">
+            <span>Descrição</span>
+            <input type="text" id="despesa-desc" required placeholder="Descrição do gasto">
+          </label>
+          <label class="field">
+            <span>Valor (R$)</span>
+            <input type="number" id="despesa-valor" min="0" step="0.01" required placeholder="0,00">
+          </label>
+          <input type="hidden" id="despesa-id">
+          <div class="form-acoes">
+            <button type="submit" class="btn btn-primary" id="despesa-submit">Adicionar despesa</button>
+            <button type="button" class="btn btn-ghost" id="despesa-cancelar" hidden>Cancelar edição</button>
+          </div>
+        </form>
+
+        <div class="filtro-comp">
+          <label class="campo-inline">
+            <span>Filtrar por competência</span>
+            <input type="month" id="filtro-despesa">
+          </label>
+          <button class="btn btn-ghost" id="filtro-despesa-limpar">Mostrar todas</button>
+        </div>
+
+        <div class="tabela-lancamentos">
+          <table>
+            <thead><tr><th>Competência</th><th>Categoria</th><th>Descrição</th><th class="num">Valor</th><th class="acoes-col">Ações</th></tr></thead>
+            <tbody id="tbody-despesas"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ---------- APLICAÇÕES ---------- -->
+      <section id="painel-aplicacoes" class="painel">
+        <div class="painel-cabecalho"><h2>Aplicações</h2></div>
+
+        <form id="form-aplicacao" class="form-grid">
+          <label class="field">
+            <span>Competência (mês)</span>
+            <input type="month" id="aplic-comp" required>
+          </label>
+          <label class="field">
+            <span>Tipo de aplicação</span>
+            <select id="aplic-tipo" required></select>
+          </label>
+          <label class="field">
+            <span>Valor (R$)</span>
+            <input type="number" id="aplic-valor" min="0" step="0.01" required placeholder="0,00">
+          </label>
+          <input type="hidden" id="aplic-id">
+          <div class="form-acoes">
+            <button type="submit" class="btn btn-primary" id="aplic-submit">Adicionar aplicação</button>
+            <button type="button" class="btn btn-ghost" id="aplic-cancelar" hidden>Cancelar edição</button>
+          </div>
+        </form>
+
+        <div class="filtro-comp">
+          <label class="campo-inline">
+            <span>Filtrar por competência</span>
+            <input type="month" id="filtro-aplic">
+          </label>
+          <button class="btn btn-ghost" id="filtro-aplic-limpar">Mostrar todas</button>
+        </div>
+
+        <div class="tabela-lancamentos">
+          <table>
+            <thead><tr><th>Competência</th><th>Tipo</th><th class="num">Valor</th><th class="acoes-col">Ações</th></tr></thead>
+            <tbody id="tbody-aplicacoes"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ---------- CONFIG (tipos e categorias) ---------- -->
+      <section id="painel-config" class="painel">
+        <div class="painel-cabecalho"><h2>Tipos &amp; Categorias</h2></div>
+        <p class="config-nota">Cadastre aqui os itens que aparecem nas listas suspensas de Rendas, Despesas e Aplicações.</p>
+
+        <div class="config-grid">
+          <div class="config-bloco">
+            <h3>Tipos de renda</h3>
+            <form class="config-form" data-colecao="tiposRenda">
+              <input type="text" placeholder="Novo tipo de renda" required>
+              <button type="submit" class="btn btn-primary">Adicionar</button>
+            </form>
+            <ul class="config-lista" id="lista-tiposRenda"></ul>
+          </div>
+
+          <div class="config-bloco">
+            <h3>Categorias de despesa</h3>
+            <form class="config-form" data-colecao="categorias">
+              <input type="text" placeholder="Nova categoria" required>
+              <button type="submit" class="btn btn-primary">Adicionar</button>
+            </form>
+            <ul class="config-lista" id="lista-categorias"></ul>
+          </div>
+
+          <div class="config-bloco">
+            <h3>Tipos de aplicação</h3>
+            <form class="config-form" data-colecao="tiposAplicacao">
+              <input type="text" placeholder="Novo tipo de aplicação" required>
+              <button type="submit" class="btn btn-primary">Adicionar</button>
+            </form>
+            <ul class="config-lista" id="lista-tiposAplicacao"></ul>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Toast de feedback -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <!-- ===================== BIBLIOTECAS ===================== -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- ===================== MÓDULOS DA APLICAÇÃO ===================== -->
+  <script src="js/config.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
